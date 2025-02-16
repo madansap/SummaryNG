@@ -19,7 +19,9 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
     try {
       const dataUrl = await toPng(summaryRef.current, {
         quality: 1.0,
-        pixelRatio: 2
+        pixelRatio: 2,
+        canvasWidth: summaryRef.current.scrollWidth,
+        canvasHeight: summaryRef.current.scrollHeight
       })
       
       const link = document.createElement('a')
@@ -44,47 +46,28 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
 
       <div 
         ref={summaryRef}
-        className="bg-white rounded-lg shadow overflow-hidden"
-        style={{
-          aspectRatio: "4/5",
-          width: "100%",
-          maxWidth: "600px",
-          margin: "0 auto"
-        }}
+        className="bg-white rounded-lg shadow-lg overflow-hidden w-full max-w-[600px] mx-auto"
       >
-        <div className="p-12">
+        <div className="p-8">
           <div className="prose prose-sm max-w-none dark:prose-invert">
             <Markdown
               components={{
-                h1: ({ children }) => (
-                  <h1 className="text-3xl font-bold tracking-tight mb-2 text-gray-900">
-                    {children}
-                  </h1>
-                ),
-                p: ({ children }) => (
-                  <p className="text-lg text-gray-600 mb-6 font-normal leading-relaxed">
-                    {children}
-                  </p>
-                ),
                 ul: ({ children }) => (
-                  <ul className="space-y-5 list-none pl-0">
+                  <ul className="space-y-2 list-none pl-0">
                     {children}
                   </ul>
                 ),
-                li: ({ children }) => (
-                  <li className="flex items-start space-x-3 text-gray-700">
-                    <span className="block w-1.5 h-1.5 mt-2.5 rounded-full bg-gray-300 flex-shrink-0" />
-                    <span className="text-base leading-relaxed">
-                      {typeof children === 'string' 
-                        ? children.split(':').map((part, i) => (
-                            <span key={i} className={i === 0 ? 'font-semibold' : 'font-normal'}>
-                              {i > 0 ? ':' : ''}{part}
-                            </span>
-                          ))
-                        : children}
-                    </span>
-                  </li>
-                ),
+                li: ({ children }) => {
+                  const text = typeof children === 'string' ? children.split(':')[0] : children
+                  return (
+                    <li className="flex items-center gap-2 text-gray-800 text-sm leading-tight">
+                      <span className="w-2 h-2 rounded-full bg-gray-400 flex-shrink-0" />
+                      <span className="flex-1 text-[15px] font-semibold">
+                        {text}
+                      </span>
+                    </li>
+                  )
+                }
               }}
             >
               {summary}
@@ -94,4 +77,4 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
       </div>
     </div>
   )
-} 
+}
