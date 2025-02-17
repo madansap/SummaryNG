@@ -1,6 +1,9 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { authMiddleware } from "@clerk/nextjs";
 
-export function middleware(request: NextRequest) {
-  return NextResponse.next()
-}
+export default authMiddleware({
+  publicRoutes: ["/", "/api/summarize"]
+});
+
+export const config = {
+  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+};
