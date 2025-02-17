@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { SummaryDisplay } from "./summary-display";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 
 const formSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
@@ -16,6 +18,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function SummaryForm() {
+  const { userId } = useAuth();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
 
@@ -36,7 +40,10 @@ export function SummaryForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url: data.url }),
+        body: JSON.stringify({ 
+          url: data.url,
+          userId 
+        }),
       });
 
       const result = await response.json();
@@ -51,7 +58,21 @@ export function SummaryForm() {
 
       setSummary(result.summary);
       toast.success("Summary generated successfully!");
-    } catch (error) {
+
+      // Save to database
+      await fetch("/api/summaries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: data.url,
+          content: result.summary,
+          title: result.title || 'Untitled Summary',
+          userId
+        }),
+      });
+
+      router.refresh();
+    } catch (error: any) {
       console.error("[SUMMARY_ERROR]", error);
       toast.error(error.message || "Failed to generate summary. Please try again.");
     } finally {
@@ -67,7 +88,6 @@ export function SummaryForm() {
           {...form.register("url")}
           disabled={isLoading}
         />
-
         {form.formState.errors.url && (
           <p className="text-sm text-red-500">
             {form.formState.errors.url.message}

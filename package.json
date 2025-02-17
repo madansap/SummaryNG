@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:push": "drizzle-kit push:sqlite",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "wrangler d1 migrations apply summarizer-db --local"
   },
   "dependencies": {
     "@clerk/nextjs": "4.27.2",

@@ -3,5 +3,11 @@ compatibility_date = "2024-01-01"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "summarizer"
-database_id = "YOUR_DATABASE_ID" # Replace with the ID from the create command 
+database_name = "summarizer-db"
+database_id = "YOUR_DATABASE_ID" # Replace with the ID from the create command
+
+[env.development]
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "summarizer-db"
+database_id = "YOUR_DATABASE_ID" 

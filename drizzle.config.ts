@@ -1,10 +1,12 @@
 import type { Config } from "drizzle-kit"
 
 export default {
-  schema: "./src/db/schema.ts",
+  schema: "./src/drizzle/schema.ts",
   out: "./drizzle",
-  driver: "d1",
+  driver: 'better-sqlite',
   dbCredentials: {
-    wranglerConfigPath: "wrangler.toml",
+    url: 'local.db',
   },
+  verbose: true,
+  strict: true,
 } satisfies Config 
