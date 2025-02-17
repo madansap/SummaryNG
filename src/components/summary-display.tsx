@@ -1,38 +1,48 @@
-"use client"
+"use client";
 
-import { useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { toPng } from "html-to-image"
-import { toast } from "sonner"
-import Markdown from "react-markdown"
+import { useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { toPng } from "html-to-image";
+import { toast } from "sonner";
+import Markdown from "react-markdown";
 
 interface SummaryDisplayProps {
-  summary: string
+  summary: string;
 }
 
 export function SummaryDisplay({ summary }: SummaryDisplayProps) {
-  const summaryRef = useRef<HTMLDivElement>(null)
+  const summaryRef = useRef<HTMLDivElement>(null);
 
   async function downloadImage() {
-    if (!summaryRef.current) return
+    if (!summaryRef.current) return;
 
     try {
+      const padding = 16; // Consistent 16px padding
+      const width = summaryRef.current.offsetWidth;
+      const height = summaryRef.current.offsetHeight;
+
       const dataUrl = await toPng(summaryRef.current, {
         quality: 1.0,
         pixelRatio: 2,
-        canvasWidth: summaryRef.current.scrollWidth,
-        canvasHeight: summaryRef.current.scrollHeight
-      })
-      
-      const link = document.createElement('a')
-      link.download = 'summary.png'
-      link.href = dataUrl
-      link.click()
-      
-      toast.success("Summary downloaded successfully")
+        width,
+        height,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          padding: `${padding}px`,
+          backgroundColor: 'white',
+        }
+      });
+
+      const link = document.createElement("a");
+      link.download = "summary.png";
+      link.href = dataUrl;
+      link.click();
+
+      toast.success("Summary downloaded successfully");
     } catch (err) {
-      toast.error("Failed to download summary")
-      console.error("[DOWNLOAD_ERROR]", err)
+      toast.error("Failed to download summary");
+      console.error("[DOWNLOAD_ERROR]", err);
     }
   }
 
@@ -44,37 +54,57 @@ export function SummaryDisplay({ summary }: SummaryDisplayProps) {
         </Button>
       </div>
 
-      <div 
+      <div
         ref={summaryRef}
-        className="bg-white rounded-lg shadow-lg overflow-hidden w-full max-w-[600px] mx-auto"
+        className="bg-white rounded-lg shadow-lg p-6 mx-auto"
+        style={{
+          width: "100%",
+          maxWidth: "800px",
+        }}
       >
-        <div className="p-8">
-          <div className="prose prose-sm max-w-none dark:prose-invert">
-            <Markdown
-              components={{
-                ul: ({ children }) => (
-                  <ul className="space-y-2 list-none pl-0">
-                    {children}
-                  </ul>
-                ),
-                li: ({ children }) => {
-                  const text = typeof children === 'string' ? children.split(':')[0] : children
-                  return (
-                    <li className="flex items-center gap-2 text-gray-800 text-sm leading-tight">
-                      <span className="w-2 h-2 rounded-full bg-gray-400 flex-shrink-0" />
-                      <span className="flex-1 text-[15px] font-semibold">
-                        {text}
-                      </span>
-                    </li>
-                  )
-                }
-              }}
-            >
-              {summary}
-            </Markdown>
-          </div>
+        <div className="prose prose-sm max-w-none dark:prose-invert">
+          <Markdown
+            components={{
+              h1: ({ children }) => (
+                <h1 className="text-2xl font-bold mb-3 text-gray-900">
+                  {children}
+                </h1>
+              ),
+              p: ({ children }) => (
+                <p className="text-base text-gray-600 mb-4 leading-relaxed">
+                  {children}
+                </p>
+              ),
+              ul: ({ children }) => (
+                <ul className="space-y-3 list-none pl-0">
+                  {children}
+                </ul>
+              ),
+              li: ({ children }) => {
+                const [point, explanation] = typeof children === 'string' 
+                  ? children.split(':').map(part => part.trim())
+                  : [children, ''];
+                
+                return (
+                  <li className="flex gap-3 text-gray-800 items-start">
+                    <span className="text-gray-400 select-none mt-1">•</span>
+                    <div className="flex-1">
+                      <span className="font-semibold text-gray-900">{point}</span>
+                      {explanation && (
+                        <span className="text-gray-600 font-normal">
+                          : {explanation}
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                );
+              },
+            }}
+          >
+            {summary}
+          </Markdown>
         </div>
       </div>
     </div>
-  )
+  );
 }

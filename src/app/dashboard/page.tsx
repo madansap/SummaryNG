@@ -1,5 +1,5 @@
-import Link from "next/link"
-import { SummaryForm } from "@/components/summary-form"
+import Link from "next/link";
+import { SummaryForm } from "@/components/summary-form";
 
 export default function DashboardPage() {
   return (
@@ -18,5 +18,5 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
-  )
-} 
+  );
+}
