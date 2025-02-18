@@ -19,31 +19,50 @@ declare global {
 
 let db: any;
 
+// Production environment - always use Postgres
 if (process.env.NODE_ENV === 'production') {
-  // Use Postgres in production
   if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set");
+    throw new Error("DATABASE_URL environment variable is required in production");
   }
 
-  const client = postgres(process.env.DATABASE_URL);
-  db = drizzlePostgres(client, { schema });
-} else {
-  // Use SQLite for local development
+  try {
+    const client = postgres(process.env.DATABASE_URL, {
+      max: 1,
+      idle_timeout: 20,
+      connect_timeout: 10,
+    });
+    
+    db = drizzlePostgres(client, { schema });
+  } catch (error) {
+    console.error("Failed to initialize production database:", error);
+    throw error;
+  }
+} 
+// Development environment - use SQLite
+else {
   const initDevDB = async () => {
     try {
-      const { default: Database } = await import('better-sqlite3');
-      const { drizzle } = await import('drizzle-orm/better-sqlite3');
+      // Dynamic imports to prevent these modules from being included in production build
+      const [{ default: Database }, { drizzle }] = await Promise.all([
+        import('better-sqlite3'),
+        import('drizzle-orm/better-sqlite3')
+      ]);
       
       const sqlite = new Database("local.db");
       db = drizzle(sqlite, { schema });
     } catch (error) {
       console.error('Failed to initialize development database:', error);
-      throw error; // Re-throw to ensure we don't continue with an uninitialized database
+      throw error;
     }
   };
 
   // Initialize development database
-  initDevDB().catch(console.error);
+  if (typeof window === 'undefined') { // Only run on server-side
+    initDevDB().catch(error => {
+      console.error('Failed to initialize development database:', error);
+      process.exit(1);
+    });
+  }
 }
 
 export { db }; 
