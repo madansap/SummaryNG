@@ -1,41 +1,51 @@
-import { auth } from "@clerk/nextjs";
-import { UserButton } from "@clerk/nextjs";
+'use client';
+
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { DashboardHeader } from '@/components/dashboard/header';
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { db } from "@/lib/db";
 import { summaries } from "@/drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = auth();
-  
-  if (!userId) return null;
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/sign-in');
+      }
+    };
+
+    checkAuth();
+  }, [router, supabase.auth]);
 
   const userSummaries = await db
     .select()
     .from(summaries)
-    .where(eq(summaries.userId, userId))
+    .where(eq(summaries.userId, supabase.auth.getUser().data.user.id))
     .orderBy(desc(summaries.createdAt))
     .all() || [];
 
   return (
-    <div className="flex h-screen">
-      <Sidebar summaries={userSummaries} />
-      
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 border-b bg-white">
-          <div className="h-full px-6 flex items-center justify-between">
-            <h1 className="text-xl font-semibold">Article Summarizer</h1>
-            <UserButton />
-          </div>
-        </header>
+    <div className="min-h-screen bg-gray-100">
+      <DashboardHeader />
+      <div className="flex h-screen">
+        <Sidebar summaries={userSummaries} />
         
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col">
+          <main className="flex-1 overflow-y-auto p-6">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

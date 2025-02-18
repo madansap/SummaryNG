@@ -1,33 +1,55 @@
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { summaries } from '@/drizzle/schema';
-import { auth } from '@clerk/nextjs';
 import { eq } from 'drizzle-orm';
-import { NextResponse } from 'next/server';
 
 export async function GET(
-  request: Request,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const summary = await db.select()
-      .from(summaries)
-      .where(eq(summaries.id, params.id))
-      .get();
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (!summary) {
-      return NextResponse.json(
-        { error: 'Summary not found' },
-        { status: 404 }
-      );
+    if (!session) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    return NextResponse.json(summary);
-  } catch (error: unknown) {
-    console.error('Error fetching summary:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch summary' },
-      { status: 500 }
-    );
+    const data = await db?.query.summaries.findFirst({
+      where: (summaries, { eq: equals }) => 
+        equals(summaries.id, params.id) && 
+        equals(summaries.userId, session.user.id),
+    });
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error in GET /api/summaries/[id]:', error);
+    return new NextResponse('Internal Error', { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    await db?.delete(summaries)
+      .where(eq(summaries.id, params.id))
+      .where(eq(summaries.userId, session.user.id));
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error('Error in DELETE /api/summaries/[id]:', error);
+    return new NextResponse('Internal Error', { status: 500 });
   }
 }
 
