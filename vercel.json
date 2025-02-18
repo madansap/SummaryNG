@@ -1,6 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install --prod && next build",
+  "buildCommand": "NODE_ENV=production pnpm install --prod && pnpm run build",
   "installCommand": "npm install -g pnpm",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "env": {
+    "NODE_ENV": "production"
+  }
 } 
