@@ -1,14 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { UserButton, useAuth } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useEffect, useState } from 'react';
+import { Button } from "./ui/button";
 
 export function Nav() {
-  const pathname = usePathname();
-  const { isSignedIn } = useAuth();
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user);
+    };
+
+    getUser();
+  }, [supabase]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
   return (
     <header className="border-b" data-oid="k0t:dgl">
@@ -19,32 +34,18 @@ export function Nav() {
         <Link href="/" className="text-xl font-bold" data-oid="d55-c9o">
           Article Summarizer
         </Link>
-        {isSignedIn ? (
+        {user && (
           <div className="flex items-center gap-4" data-oid="96jlq5z">
             <Link
               href="/dashboard"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                pathname === "/dashboard"
-                  ? "text-foreground"
-                  : "text-muted-foreground",
-              )}
+              className="text-sm font-medium transition-colors hover:text-primary"
               data-oid="dwjtkv-"
             >
               Dashboard
             </Link>
-            <UserButton afterSignOutUrl="/" data-oid="p5sreqg" />
-          </div>
-        ) : (
-          <div className="flex gap-4" data-oid="-be1yng">
-            <Link href="/sign-in" data-oid=".os8te7">
-              <Button variant="ghost" data-oid="2gmd34p">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/sign-up" data-oid="rz.s5qh">
-              <Button data-oid="39xaib9">Get Started</Button>
-            </Link>
+            <Button variant="ghost" onClick={handleSignOut} data-oid="p5sreqg">
+              Sign Out
+            </Button>
           </div>
         )}
       </nav>

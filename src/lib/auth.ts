@@ -1,7 +1,19 @@
-import { auth } from "@clerk/nextjs"
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { getDB } from "@/db"
 import { users } from "@/db/schema"
 import { eq } from "drizzle-orm"
+
+export async function getSession() {
+  const supabase = createServerComponentClient({ cookies });
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+}
+
+export async function getUserId() {
+  const session = await getSession();
+  return session?.user?.id;
+}
 
 export async function getCurrentUser() {
   const { userId } = auth()

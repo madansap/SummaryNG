@@ -1,29 +1,51 @@
 "use client";
 
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation';
+
+export function SignInButton() {
+  const router = useRouter();
+  
+  return (
+    <Button
+      variant="ghost"
+      onClick={() => router.push('/sign-in')}
+    >
+      Sign In
+    </Button>
+  );
+}
+
+export function SignUpButton() {
+  const router = useRouter();
+  
+  return (
+    <Button
+      onClick={() => router.push('/sign-up')}
+    >
+      Get Started
+    </Button>
+  );
+}
 
 export function AuthButtons() {
   return (
-    <div className="flex gap-4" data-oid="l1_92:-">
-      <SignInButton data-oid=".7w_vch">
-        <Button variant="ghost" data-oid="9thb:wv">
-          Sign In
-        </Button>
-      </SignInButton>
-      <SignUpButton data-oid="id48_.o">
-        <Button data-oid="0ek.6mt">Get Started</Button>
-      </SignUpButton>
+    <div className="flex gap-4">
+      <SignInButton />
+      <SignUpButton />
     </div>
   );
 }
 
 export function SignUpCTA() {
+  const router = useRouter();
+  
   return (
-    <SignUpButton data-oid="yy7e8ev">
-      <Button size="lg" data-oid="0zxpkf9">
-        Try for Free
-      </Button>
-    </SignUpButton>
+    <Button
+      size="lg"
+      onClick={() => router.push('/sign-up')}
+    >
+      Get Started
+    </Button>
   );
 }
