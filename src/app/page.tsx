@@ -36,10 +36,10 @@ export default function LandingPage() {
             <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
               Pricing
             </Link>
-            <SignInButton afterSignInUrl="/dashboard" mode="modal">
+            <SignInButton mode="modal">
               <Button variant="ghost">Sign In</Button>
             </SignInButton>
-            <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+            <SignUpButton mode="modal">
               <Button>Get Started</Button>
             </SignUpButton>
           </nav>
@@ -57,12 +57,12 @@ export default function LandingPage() {
               Save hours of reading time with AI-powered article summaries
             </p>
             <div className="flex gap-4 justify-center">
-              <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+              <SignUpButton mode="modal">
                 <Button size="lg" className="gap-2">
                   Get Started <ArrowRight className="h-4 w-4" />
                 </Button>
               </SignUpButton>
-              <SignInButton afterSignInUrl="/dashboard" mode="modal">
+              <SignInButton mode="modal">
                 <Button size="lg" variant="outline">
                   Try Demo
                 </Button>
@@ -126,7 +126,7 @@ export default function LandingPage() {
               <div className="border rounded-lg p-8 bg-white">
                 <h3 className="text-xl font-semibold mb-4">Free</h3>
                 <p className="text-3xl font-bold mb-6">$0<span className="text-base font-normal text-muted-foreground">/mo</span></p>
-                <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+                <SignUpButton mode="modal">
                   <Button className="w-full mb-6">Get Started</Button>
                 </SignUpButton>
                 {/* ... rest of the pricing features ... */}
@@ -139,7 +139,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-semibold mb-4">Pro</h3>
                 <p className="text-3xl font-bold mb-6">$9<span className="text-base font-normal text-muted-foreground">/mo</span></p>
-                <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+                <SignUpButton mode="modal">
                   <Button className="w-full mb-6">Get Started</Button>
                 </SignUpButton>
                 {/* ... rest of the pricing features ... */}
@@ -149,7 +149,7 @@ export default function LandingPage() {
               <div className="border rounded-lg p-8 bg-white">
                 <h3 className="text-xl font-semibold mb-4">Team</h3>
                 <p className="text-3xl font-bold mb-6">$29<span className="text-base font-normal text-muted-foreground">/mo</span></p>
-                <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+                <SignUpButton mode="modal">
                   <Button className="w-full mb-6">Contact Sales</Button>
                 </SignUpButton>
                 {/* ... rest of the pricing features ... */}
@@ -159,7 +159,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* Footer - Enhanced with better structure */}
+      {/* Footer */}
       <footer className="border-t py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
