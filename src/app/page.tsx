@@ -1,7 +1,10 @@
+'use client';
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap, Brain, Download, Clock, Shield, Users } from "lucide-react";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -20,6 +23,17 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
 }
 
 export default function LandingPage() {
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  const handleSignIn = () => {
+    router.push('/sign-in');
+  };
+
+  const handleSignUp = () => {
+    router.push('/sign-up');
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -36,12 +50,8 @@ export default function LandingPage() {
             <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
               Pricing
             </Link>
-            <SignInButton mode="modal">
-              <Button variant="ghost">Sign In</Button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <Button>Get Started</Button>
-            </SignUpButton>
+            <Button variant="ghost" onClick={handleSignIn}>Sign In</Button>
+            <Button onClick={handleSignUp}>Get Started</Button>
           </nav>
         </div>
       </header>
@@ -57,16 +67,12 @@ export default function LandingPage() {
               Save hours of reading time with AI-powered article summaries
             </p>
             <div className="flex gap-4 justify-center">
-              <SignUpButton mode="modal">
-                <Button size="lg" className="gap-2">
-                  Get Started <ArrowRight className="h-4 w-4" />
-                </Button>
-              </SignUpButton>
-              <SignInButton mode="modal">
-                <Button size="lg" variant="outline">
-                  Try Demo
-                </Button>
-              </SignInButton>
+              <Button size="lg" className="gap-2" onClick={handleSignUp}>
+                Get Started <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button size="lg" variant="outline" onClick={handleSignIn}>
+                Try Demo
+              </Button>
             </div>
           </div>
         </section>
@@ -126,10 +132,7 @@ export default function LandingPage() {
               <div className="border rounded-lg p-8 bg-white">
                 <h3 className="text-xl font-semibold mb-4">Free</h3>
                 <p className="text-3xl font-bold mb-6">$0<span className="text-base font-normal text-muted-foreground">/mo</span></p>
-                <SignUpButton mode="modal">
-                  <Button className="w-full mb-6">Get Started</Button>
-                </SignUpButton>
-                {/* ... rest of the pricing features ... */}
+                <Button className="w-full mb-6" onClick={handleSignUp}>Get Started</Button>
               </div>
 
               {/* Pro Tier */}
@@ -139,20 +142,14 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-semibold mb-4">Pro</h3>
                 <p className="text-3xl font-bold mb-6">$9<span className="text-base font-normal text-muted-foreground">/mo</span></p>
-                <SignUpButton mode="modal">
-                  <Button className="w-full mb-6">Get Started</Button>
-                </SignUpButton>
-                {/* ... rest of the pricing features ... */}
+                <Button className="w-full mb-6" onClick={handleSignUp}>Get Started</Button>
               </div>
 
               {/* Team Tier */}
               <div className="border rounded-lg p-8 bg-white">
                 <h3 className="text-xl font-semibold mb-4">Team</h3>
                 <p className="text-3xl font-bold mb-6">$29<span className="text-base font-normal text-muted-foreground">/mo</span></p>
-                <SignUpButton mode="modal">
-                  <Button className="w-full mb-6">Contact Sales</Button>
-                </SignUpButton>
-                {/* ... rest of the pricing features ... */}
+                <Button className="w-full mb-6" onClick={handleSignUp}>Contact Sales</Button>
               </div>
             </div>
           </div>

@@ -1,3 +1,46 @@
+'use client';
+
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { SummaryList } from "@/components/summary-list";
+
+interface Summary {
+  id: string;
+  title: string;
+  url: string;
+  updatedAt: string;
+}
+
+export default function SummariesPage() {
+  const [summaries, setSummaries] = useState<Summary[]>([]);
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    const fetchSummaries = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/sign-in');
+        return;
+      }
+
+      const { data } = await supabase
+        .from('summaries')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      setSummaries(data || []);
+    };
+
+    fetchSummaries();
+  }, [router, supabase]);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">All Summaries</h1>
+      </div>
 import { auth } from "@clerk/nextjs";
 import { db } from "@/lib/db";
 import { summaries } from "@/drizzle/schema";
