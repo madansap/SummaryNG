@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "NODE_ENV=production SKIP_NATIVE_PACKAGES=1 pnpm install --no-frozen-lockfile && pnpm run build",
-  "installCommand": "npm install -g pnpm && SKIP_NATIVE_PACKAGES=1 pnpm install --no-frozen-lockfile",
+  "buildCommand": "rm -rf node_modules && rm -f pnpm-lock.yaml && NODE_ENV=production pnpm install --no-frozen-lockfile && pnpm run build",
+  "installCommand": "npm install -g pnpm",
   "framework": "nextjs",
   "env": {
     "NODE_ENV": "production",
