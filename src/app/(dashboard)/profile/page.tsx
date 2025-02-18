@@ -4,9 +4,6 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Clock, Zap, Users } from "lucide-react";
-import { db } from "@/lib/db";
-import { summaries } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
 
 export default function ProfilePage() {
   const [stats, setStats] = useState({
@@ -24,13 +21,12 @@ export default function ProfilePage() {
       if (!session?.user?.id) return;
 
       try {
-        const userSummaries = await db
-          .select()
-          .from(summaries)
-          .where(eq(summaries.userId, session.user.id))
-          .all();
+        const { data: userSummaries } = await supabase
+          .from('summaries')
+          .select('*')
+          .eq('user_id', session.user.id);
 
-        const totalSummaries = userSummaries.length;
+        const totalSummaries = userSummaries?.length || 0;
         const timeSaved = totalSummaries * 0.5; // Assuming 30 mins saved per summary
         
         setStats({
