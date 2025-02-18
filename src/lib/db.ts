@@ -1,4 +1,6 @@
 import { drizzle } from "drizzle-orm/better-sqlite3"
+import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js"
+import postgres from "postgres"
 import Database from "better-sqlite3"
 import * as schema from "@/drizzle/schema"
 
@@ -17,9 +19,10 @@ declare global {
   const DB: D1Database | undefined;
 }
 
-let db: ReturnType<typeof drizzle>;
+let db: any;
 
 if (process.env.NODE_ENV === 'development') {
+  // Use SQLite for local development
   const sqlite = new Database("local.db");
   
   // Create tables if they don't exist
@@ -37,7 +40,13 @@ if (process.env.NODE_ENV === 'development') {
   
   db = drizzle(sqlite, { schema });
 } else {
-  throw new Error("Production database not configured");
+  // Use Postgres in production
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is not set");
+  }
+
+  const client = postgres(process.env.DATABASE_URL);
+  db = drizzlePostgres(client, { schema });
 }
 
 export { db }; 
