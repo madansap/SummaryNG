@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   webpack: (config, { isServer }) => {
-    // Fixes npm packages that depend on `fs` module
+    // Handle client-side dependencies
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -9,13 +9,15 @@ const nextConfig = {
         net: false,
         tls: false,
         undici: false,
+        sqlite3: false,
+        'better-sqlite3': false
       };
     }
     return config;
   },
   experimental: {
-    // Remove serverActions flag as it's enabled by default now
-    serverComponentsExternalPackages: ['better-sqlite3']
+    // External packages that should not be bundled
+    serverComponentsExternalPackages: ['better-sqlite3', 'sqlite3']
   },
   env: {
     DB: process.env.DB,

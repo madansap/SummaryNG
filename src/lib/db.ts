@@ -30,6 +30,7 @@ if (process.env.NODE_ENV === 'production') {
       max: 1,
       idle_timeout: 20,
       connect_timeout: 10,
+      ssl: process.env.NODE_ENV === 'production'
     });
     
     db = drizzlePostgres(client, { schema });
@@ -44,24 +45,27 @@ else {
     try {
       // Dynamic imports to prevent these modules from being included in production build
       const [{ default: Database }, { drizzle }] = await Promise.all([
-        import('better-sqlite3'),
-        import('drizzle-orm/better-sqlite3')
+        import('better-sqlite3').catch(() => ({ default: null })),
+        import('drizzle-orm/better-sqlite3').catch(() => ({ drizzle: null }))
       ]);
+
+      if (!Database || !drizzle) {
+        console.warn('SQLite dependencies not available, skipping development database initialization');
+        return;
+      }
       
       const sqlite = new Database("local.db");
       db = drizzle(sqlite, { schema });
     } catch (error) {
       console.error('Failed to initialize development database:', error);
-      throw error;
+      // Don't throw in development, just log the error
+      console.warn('Continuing without local database');
     }
   };
 
-  // Initialize development database
-  if (typeof window === 'undefined') { // Only run on server-side
-    initDevDB().catch(error => {
-      console.error('Failed to initialize development database:', error);
-      process.exit(1);
-    });
+  // Initialize development database only on server side
+  if (typeof window === 'undefined') {
+    initDevDB().catch(console.error);
   }
 }
 
