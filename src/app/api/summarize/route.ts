@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { auth } from "@clerk/nextjs"
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import { db } from "@/lib/db"
 import { summaries } from "@/drizzle/schema"
-import * as cheerio from 'cheerio'
-import https from 'https'
+import https from 'node:https'
 import crypto from 'crypto'
 import { groq } from "@/lib/groq"
 
@@ -29,17 +29,13 @@ function fetchUrl(urlString: string): Promise<string> {
     const options = {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept': 'text/html',
         'Accept-Language': 'en-US,en;q=0.5',
-        'Connection': 'keep-alive',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
       },
-      timeout: 15000, // 15 seconds timeout
+      timeout: 15000,
     };
 
-    const request = https.get(parsedUrl, options, (response) => {
-      // Handle redirects
+    https.get(parsedUrl, options, (response) => {
       if (response.statusCode === 301 || response.statusCode === 302) {
         const redirectUrl = response.headers.location;
         if (redirectUrl) {
@@ -52,42 +48,48 @@ function fetchUrl(urlString: string): Promise<string> {
       }
 
       if (response.statusCode !== 200) {
-        reject(new Error(`Failed to fetch article: HTTP ${response.statusCode} - ${response.statusMessage}`));
+        reject(new Error(`Failed to fetch article: HTTP ${response.statusCode}`));
         return;
       }
 
-      // Check content type
       const contentType = response.headers['content-type'] || '';
       if (!contentType.includes('text/html')) {
-        reject(new Error('URL does not point to an HTML page. Please provide a valid article URL.'));
+        reject(new Error('URL does not point to an HTML page'));
         return;
       }
 
       let data = '';
-      response.on('data', (chunk) => {
-        data += chunk;
+      response.on('data', (chunk) => data += chunk);
+      response.on('end', () => resolve(data));
+    }).on('error', reject)
+      .on('timeout', () => {
+        reject(new Error('Request timed out'));
       });
-
-      response.on('end', () => {
-        if (!data) {
-          reject(new Error('No content received from the URL'));
-          return;
-        }
-        resolve(data);
-      });
-    });
-
-    request.on('error', (error) => {
-      reject(new Error(`Failed to fetch article: ${error.message}`));
-    });
-
-    request.on('timeout', () => {
-      request.destroy();
-      reject(new Error('Request timed out. Please check if the URL is accessible.'));
-    });
-
-    request.setTimeout(options.timeout);
   });
+}
+
+// Simple HTML parser function
+function extractContent(html: string) {
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const title = titleMatch ? titleMatch[1].trim() : "Untitled Article";
+
+  // Extract meta title if available
+  const metaTitleMatch = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i) ||
+                        html.match(/<meta[^>]*name="twitter:title"[^>]*content="([^"]+)"/i);
+  const metaTitle = metaTitleMatch ? metaTitleMatch[1].trim() : null;
+
+  // Extract article text
+  const bodyText = html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<[^>]+>/g, '\n')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return {
+    title: metaTitle || title,
+    text: bodyText
+  };
 }
 
 interface RequestBody {
@@ -96,8 +98,10 @@ interface RequestBody {
 
 export async function POST(req: Request) {
   try {
-    const { userId } = auth()
-    if (!userId) {
+    const supabase = createRouteHandlerClient({ cookies })
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
@@ -106,12 +110,10 @@ export async function POST(req: Request) {
       return new NextResponse("URL is required", { status: 400 })
     }
 
-    // Validate URL format
     if (!isValidUrl(body.url)) {
       return new NextResponse("Invalid URL format", { status: 400 })
     }
 
-    // Fetch the article content with proper error handling
     let html;
     try {
       html = await fetchUrl(body.url);
@@ -123,25 +125,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Use cheerio to parse the HTML
-    const $ = cheerio.load(html)
-    
-    // Extract title - try different common selectors
-    const title = $('meta[property="og:title"]').attr('content') || 
-                $('meta[name="twitter:title"]').attr('content') ||
-                $('title').text() ||
-                "Untitled Article"
+    const { title, text } = extractContent(html);
 
-    // Extract article content
-    const articleText = $('article, [role="article"], .article-content, .post-content, main')
-      .find('p')
-      .map((_, el) => $(el).text().trim())
-      .get()
-      .join('\n')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    if (!articleText) {
+    if (!text) {
       return new NextResponse(
         "Could not extract article content. Please ensure the URL points to a valid article.",
         { status: 400 }
@@ -171,7 +157,7 @@ export async function POST(req: Request) {
       - Do not add any external context not present in the article
       
       Article content:
-      ${articleText}
+      ${text}
     `;
 
     const completion = await groq.chat.completions.create({
@@ -186,27 +172,19 @@ export async function POST(req: Request) {
       throw new Error("Failed to generate summary");
     }
 
-    // Parse the summary into structured format
-    interface SummaryPoint {
-      title: string;
-      description: string;
-    }
-
     const lines = summary.split('\n').map(line => line.trim()).filter(Boolean);
     const subtitle = lines.find(line => line.startsWith('SUBTITLE:'))?.replace('SUBTITLE:', '').trim() || '';
     
-    // Extract bullet points
-    const points: SummaryPoint[] = lines
+    const points = lines
       .filter(line => line.startsWith('•'))
       .map(point => {
         const [title, ...descriptionParts] = point.replace('•', '').split(':').map(s => s.trim());
         return {
-          title: title.replace(/[\[\]]/g, '').replace(/\*\*/g, ''),  // Remove brackets and asterisks
-          description: descriptionParts.join(':').trim()  // Rejoin in case there were colons in the description
+          title: title.replace(/[\[\]]/g, '').replace(/\*\*/g, ''),
+          description: descriptionParts.join(':').trim()
         };
       });
 
-    // Create the formatted summary
     const content = `
       <div class="summary-content p-8 max-w-3xl mx-auto bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
         <div class="prose prose-sm max-w-none">
@@ -232,13 +210,12 @@ export async function POST(req: Request) {
           </div>
         </div>
       </div>
-    `
+    `;
 
-    // Save to database
     const id = generateId()
     const summaryDb = await db.insert(summaries).values({
       id,
-      userId,
+      userId: session.user.id,
       title: title.trim() || 'Untitled Article',
       content,
       url: body.url,

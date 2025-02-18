@@ -7,17 +7,13 @@ const nextConfig = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
-        tls: false,
-        undici: false,
-        sqlite3: false,
-        'better-sqlite3': false
+        tls: false
       };
     }
     return config;
   },
-  experimental: {
-    // External packages that should not be bundled
-    serverComponentsExternalPackages: ['better-sqlite3', 'sqlite3']
+  images: {
+    domains: ['pysdzwzkikklnrayqqat.supabase.co'],
   },
   env: {
     DB: process.env.DB,

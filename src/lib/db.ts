@@ -1,4 +1,4 @@
-import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js"
+import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 import * as schema from "@/drizzle/schema"
 
@@ -17,56 +17,20 @@ declare global {
   const DB: D1Database | undefined;
 }
 
-let db: any;
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is required");
+}
 
-// Production environment - always use Postgres
-if (process.env.NODE_ENV === 'production') {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL environment variable is required in production");
-  }
-
-  try {
-    const client = postgres(process.env.DATABASE_URL, {
+// Don't initialize postgres in edge runtime
+const client = process.env.EDGE_RUNTIME
+  ? null
+  : postgres(process.env.DATABASE_URL, {
       max: 1,
+      ssl: process.env.NODE_ENV === "production",
       idle_timeout: 20,
       connect_timeout: 10,
-      ssl: process.env.NODE_ENV === 'production'
     });
-    
-    db = drizzlePostgres(client, { schema });
-  } catch (error) {
-    console.error("Failed to initialize production database:", error);
-    throw error;
-  }
-} 
-// Development environment - use SQLite
-else {
-  const initDevDB = async () => {
-    try {
-      // Dynamic imports to prevent these modules from being included in production build
-      const [{ default: Database }, { drizzle }] = await Promise.all([
-        import('better-sqlite3').catch(() => ({ default: null })),
-        import('drizzle-orm/better-sqlite3').catch(() => ({ drizzle: null }))
-      ]);
 
-      if (!Database || !drizzle) {
-        console.warn('SQLite dependencies not available, skipping development database initialization');
-        return;
-      }
-      
-      const sqlite = new Database("local.db");
-      db = drizzle(sqlite, { schema });
-    } catch (error) {
-      console.error('Failed to initialize development database:', error);
-      // Don't throw in development, just log the error
-      console.warn('Continuing without local database');
-    }
-  };
-
-  // Initialize development database only on server side
-  if (typeof window === 'undefined') {
-    initDevDB().catch(console.error);
-  }
-}
+const db = client ? drizzle(client, { schema }) : null;
 
 export { db }; 
