@@ -213,17 +213,20 @@ export async function POST(req: Request) {
     `;
 
     const id = generateId()
-    const summaryDb = await db.insert(summaries).values({
-      id,
-      userId: session.user.id,
-      title: title.trim() || 'Untitled Article',
-      content,
-      url: body.url,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }).returning().get()
+    const summaryDb = await db
+      .insert(summaries)
+      .values({
+        id,
+        userId: session.user.id,
+        title: title.trim() || 'Untitled Article',
+        content,
+        url: body.url,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
 
-    return NextResponse.json(summaryDb)
+    return NextResponse.json(summaryDb[0])
   } catch (error) {
     console.error("[SUMMARIZE_ERROR]", error)
     return new NextResponse(
