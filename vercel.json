@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "NODE_ENV=production pnpm install --no-optional && pnpm run build",
-  "installCommand": "npm install -g pnpm && pnpm install --no-optional",
+  "buildCommand": "NODE_ENV=production pnpm install --no-frozen-lockfile && pnpm run build",
+  "installCommand": "npm install -g pnpm && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "env": {
     "NODE_ENV": "production"
