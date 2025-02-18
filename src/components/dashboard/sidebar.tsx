@@ -8,75 +8,69 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Home,
   Plus,
-  Home
 } from "lucide-react";
-import type { Summary } from "@/drizzle/schema";
 
-interface SidebarProps {
-  summaries: Summary[];
-}
-
-export function Sidebar({ summaries }: SidebarProps) {
+export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="relative">
-      <aside className={cn(
-        "h-screen border-r bg-gray-50 transition-all duration-300",
+    <div
+      className={cn(
+        "relative h-screen border-r bg-muted/40 transition-all duration-300",
         isCollapsed ? "w-16" : "w-64"
-      )}>
-        <div className="p-4 space-y-4">
-          {/* Navigation Links */}
-          <nav className="space-y-2">
-            <Link href="/dashboard" className={cn(
-              "flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors",
-              isCollapsed && "justify-center"
-            )}>
-              <Home className="h-5 w-5" />
-              {!isCollapsed && <span>Dashboard</span>}
-            </Link>
-            
-            <Link href="/dashboard/summaries" className={cn(
-              "flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors",
-              isCollapsed && "justify-center"
-            )}>
-              <FileText className="h-5 w-5" />
-              {!isCollapsed && <span>Summaries</span>}
-            </Link>
-          </nav>
-
-          <div className="pt-4 border-t">
-            {!isCollapsed && <h2 className="text-sm font-medium mb-2">Recent Summaries</h2>}
-            <div className="space-y-1">
-              {!isCollapsed && summaries.slice(0, 5).map((summary) => (
-                <Link
-                  key={summary.id}
-                  href={`/dashboard/summary/${summary.id}`}
-                  className="block p-2 text-sm rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <p className="font-medium line-clamp-1">{summary.title}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(summary.createdAt).toLocaleDateString()}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Collapse Button */}
+      )}
+    >
+      <div className="flex h-16 items-center border-b px-4">
         <Button
           variant="ghost"
           size="sm"
-          className="absolute -right-4 top-4 rounded-full bg-white shadow-md border"
+          className="ml-auto"
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
+          {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
         </Button>
-      </aside>
+      </div>
+
+      <div className="space-y-4 py-4">
+        <div className="px-4">
+          {!isCollapsed && (
+            <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight">
+              Menu
+            </h2>
+          )}
+          <div className="space-y-1">
+            <Link href="/dashboard">
+              <Button variant="ghost" className={cn(
+                "w-full",
+                isCollapsed ? "justify-center px-2" : "justify-start"
+              )}>
+                <Home className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                {!isCollapsed && "Dashboard"}
+              </Button>
+            </Link>
+            <Link href="/dashboard/new">
+              <Button variant="ghost" className={cn(
+                "w-full",
+                isCollapsed ? "justify-center px-2" : "justify-start"
+              )}>
+                <Plus className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                {!isCollapsed && "New Summary"}
+              </Button>
+            </Link>
+            <Link href="/dashboard/summaries">
+              <Button variant="ghost" className={cn(
+                "w-full",
+                isCollapsed ? "justify-center px-2" : "justify-start"
+              )}>
+                <FileText className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                {!isCollapsed && "All Summaries"}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 } 

@@ -1,106 +1,206 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ArrowRight, Zap, Brain, Download, Clock, Shield, Users } from "lucide-react";
+import { SignInButton, SignUpButton } from "@clerk/nextjs";
 
-export default function LandingPage() {
+interface FeatureCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+
+function FeatureCard({ icon, title, description }: FeatureCardProps) {
   return (
-    <div className="flex flex-col min-h-screen" data-oid="e2obry:">
-      {/* Header */}
-      <header className="border-b" data-oid="qi:ypno">
-        <div
-          className="container mx-auto px-4 h-16 flex items-center justify-between"
-          data-oid="obj9p7."
-        >
-          <Link href="/" className="text-xl font-bold" data-oid="6cxk3jx">
-            Article Summarizer
-          </Link>
-          <Link href="/dashboard" data-oid="mbm9l9x">
-            <Button data-oid="05e8iyn">Get Started</Button>
-          </Link>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <main className="flex-1" data-oid="y1548pg">
-        <section
-          className="container mx-auto px-4 py-24 flex flex-col items-center text-center gap-8"
-          data-oid="yui0jbk"
-        >
-          <h1 className="text-5xl font-bold tracking-tight" data-oid="jgm8xsi">
-            Summarize Articles with AI
-          </h1>
-          <p
-            className="text-xl text-muted-foreground max-w-2xl"
-            data-oid="smxgm7u"
-          >
-            Transform long articles into concise, easy-to-digest summaries.
-          </p>
-          <Link href="/dashboard" data-oid="0ji.ofx">
-            <Button size="lg" data-oid="pysi94x">
-              Try for Free
-            </Button>
-          </Link>
-        </section>
-      </main>
-
-      {/* Features Section */}
-      <section id="features" className="bg-muted/50" data-oid="_uq.1zt">
-        <div className="container mx-auto px-4 py-24" data-oid="aj97e_5">
-          <h2
-            className="text-3xl font-bold text-center mb-12"
-            data-oid="b4vjwp1"
-          >
-            Key Features
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8" data-oid="hf4e_7u">
-            <FeatureCard
-              title="AI-Powered Summaries"
-              description="Advanced AI technology extracts the most important information from any article."
-              data-oid="mf.d:m5"
-            />
-
-            <FeatureCard
-              title="Multiple Export Options"
-              description="Export your summaries in different formats and aspect ratios for easy sharing."
-              data-oid="dssw6hw"
-            />
-
-            <FeatureCard
-              title="Fast & Accurate"
-              description="Get concise summaries in seconds without losing crucial information."
-              data-oid="40g5yu3"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t" data-oid="4kkm5j2">
-        <div
-          className="container mx-auto px-4 py-8 text-center text-muted-foreground"
-          data-oid="nsbq:9z"
-        >
-          © 2024 Article Summarizer. All rights reserved.
-        </div>
-      </footer>
+    <div className="p-6 rounded-lg border bg-white hover:shadow-md transition-shadow">
+      <div className="mb-4">{icon}</div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground">{description}</p>
     </div>
   );
 }
 
-function FeatureCard({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
+export default function LandingPage() {
   return (
-    <div className="p-6 rounded-lg border bg-card" data-oid=":0k749:">
-      <h3 className="text-xl font-semibold mb-2" data-oid="68pe0p0">
-        {title}
-      </h3>
-      <p className="text-muted-foreground" data-oid="8tl5dsp">
-        {description}
-      </p>
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <header className="border-b bg-white sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="text-xl font-bold flex items-center gap-2">
+            <Brain className="h-6 w-6 text-purple-600" />
+            Article Summarizer
+          </Link>
+          <nav className="hidden md:flex items-center gap-8">
+            <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground">
+              Features
+            </Link>
+            <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
+              Pricing
+            </Link>
+            <SignInButton afterSignInUrl="/dashboard" mode="modal">
+              <Button variant="ghost">Sign In</Button>
+            </SignInButton>
+            <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+              <Button>Get Started</Button>
+            </SignUpButton>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        {/* Hero CTA */}
+        <section className="py-20 text-center">
+          <div className="container mx-auto px-4">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Summarize Articles with AI
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Save hours of reading time with AI-powered article summaries
+            </p>
+            <div className="flex gap-4 justify-center">
+              <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+                <Button size="lg" className="gap-2">
+                  Get Started <ArrowRight className="h-4 w-4" />
+                </Button>
+              </SignUpButton>
+              <SignInButton afterSignInUrl="/dashboard" mode="modal">
+                <Button size="lg" variant="outline">
+                  Try Demo
+                </Button>
+              </SignInButton>
+            </div>
+          </div>
+        </section>
+
+        {/* Features section */}
+        <section id="features" className="py-20 bg-slate-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <h2 className="text-3xl font-bold mb-4">
+                Everything You Need for Efficient Reading
+              </h2>
+              <p className="text-muted-foreground">
+                Powerful features to help you consume content more effectively.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              <FeatureCard
+                icon={<Zap className="h-8 w-8 text-purple-500" />}
+                title="One-Click Summaries"
+                description="Paste any URL and get an instant, well-structured summary powered by AI."
+              />
+              <FeatureCard
+                icon={<Brain className="h-8 w-8 text-purple-500" />}
+                title="AI Editor"
+                description="Refine summaries with AI assistance for perfect clarity and focus."
+              />
+              <FeatureCard
+                icon={<Download className="h-8 w-8 text-purple-500" />}
+                title="Easy Export"
+                description="Download summaries in multiple formats for seamless integration."
+              />
+              <FeatureCard
+                icon={<Clock className="h-8 w-8 text-purple-500" />}
+                title="Save Time"
+                description="Reduce reading time by 80% while retaining key insights."
+              />
+              <FeatureCard
+                icon={<Shield className="h-8 w-8 text-purple-500" />}
+                title="Secure Storage"
+                description="All your summaries are securely stored and easily accessible."
+              />
+              <FeatureCard
+                icon={<Users className="h-8 w-8 text-purple-500" />}
+                title="Team Sharing"
+                description="Share summaries with team members for better collaboration."
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing section */}
+        <section id="pricing" className="py-20">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-12">Simple, Transparent Pricing</h2>
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {/* Free Tier */}
+              <div className="border rounded-lg p-8 bg-white">
+                <h3 className="text-xl font-semibold mb-4">Free</h3>
+                <p className="text-3xl font-bold mb-6">$0<span className="text-base font-normal text-muted-foreground">/mo</span></p>
+                <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+                  <Button className="w-full mb-6">Get Started</Button>
+                </SignUpButton>
+                {/* ... rest of the pricing features ... */}
+              </div>
+
+              {/* Pro Tier */}
+              <div className="border rounded-lg p-8 bg-white relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">Popular</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-4">Pro</h3>
+                <p className="text-3xl font-bold mb-6">$9<span className="text-base font-normal text-muted-foreground">/mo</span></p>
+                <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+                  <Button className="w-full mb-6">Get Started</Button>
+                </SignUpButton>
+                {/* ... rest of the pricing features ... */}
+              </div>
+
+              {/* Team Tier */}
+              <div className="border rounded-lg p-8 bg-white">
+                <h3 className="text-xl font-semibold mb-4">Team</h3>
+                <p className="text-3xl font-bold mb-6">$29<span className="text-base font-normal text-muted-foreground">/mo</span></p>
+                <SignUpButton afterSignUpUrl="/dashboard" mode="modal">
+                  <Button className="w-full mb-6">Contact Sales</Button>
+                </SignUpButton>
+                {/* ... rest of the pricing features ... */}
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer - Enhanced with better structure */}
+      <footer className="border-t py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <Link href="/" className="text-xl font-bold flex items-center gap-2 mb-4">
+                <Brain className="h-6 w-6 text-purple-600" />
+                Article Summarizer
+              </Link>
+              <p className="text-sm text-muted-foreground">
+                Making content consumption efficient and effective.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>Features</li>
+                <li>Pricing</li>
+                <li>Use Cases</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>About</li>
+                <li>Blog</li>
+                <li>Contact</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>Privacy</li>
+                <li>Terms</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t mt-12 pt-8 text-center text-sm text-muted-foreground">
+            © 2024 Article Summarizer. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

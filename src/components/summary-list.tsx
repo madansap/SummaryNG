@@ -1,12 +1,16 @@
-import { Summary } from "@/drizzle/schema";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 
 interface SummaryListProps {
-  summaries: Summary[];
+  summaries?: Array<{
+    id: string;
+    title: string;
+    url: string;
+    updatedAt: string;
+  }>;
 }
 
-export function SummaryList({ summaries }: SummaryListProps) {
+export function SummaryList({ summaries = [] }: SummaryListProps) {
   if (summaries.length === 0) {
     return (
       <div className="text-center py-12">

@@ -9,7 +9,6 @@ import {
   Bold,
   Italic,
   List,
-  Heading,
   Undo,
   Redo,
 } from "lucide-react";
@@ -29,8 +28,8 @@ export function SummaryEditor({ summary, onUpdate }: SummaryEditorProps) {
     content: summary,
     editable: isEditing,
     onUpdate: ({ editor }) => {
-      const markdown = editor.storage.markdown.getMarkdown();
-      onUpdate(markdown);
+      const html = editor.getHTML();
+      onUpdate(html);
     },
   });
 
@@ -46,7 +45,7 @@ export function SummaryEditor({ summary, onUpdate }: SummaryEditorProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          summary: editor?.storage.markdown.getMarkdown(),
+          summary: editor?.getHTML(),
           prompt: aiPrompt,
         }),
       });

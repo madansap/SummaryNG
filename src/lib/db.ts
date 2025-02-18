@@ -1,17 +1,26 @@
 import { drizzle } from "drizzle-orm/better-sqlite3"
-import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3"
 import Database from "better-sqlite3"
 import * as schema from "@/drizzle/schema"
 
-// This is a type declaration for the Cloudflare D1 binding
+// Define D1Database type for Cloudflare
+interface D1Database {
+  prepare: (query: string) => {
+    run: (params?: unknown[]) => void;
+    get: (params?: unknown[]) => unknown;
+    all: (params?: unknown[]) => unknown[];
+  };
+  exec: (query: string) => Promise<void>;
+}
+
+// Declare global DB for Cloudflare
 declare global {
   const DB: D1Database | undefined;
 }
 
-let db: any;
+let db: ReturnType<typeof drizzle>;
 
 if (process.env.NODE_ENV === 'development') {
-  const sqlite = new Database("local.db", { verbose: console.log });
+  const sqlite = new Database("local.db");
   
   // Create tables if they don't exist
   sqlite.exec(`
@@ -21,18 +30,14 @@ if (process.env.NODE_ENV === 'development') {
       title TEXT NOT NULL,
       content TEXT NOT NULL,
       url TEXT NOT NULL,
-      created_at INTEGER NOT NULL,
-      updated_at INTEGER NOT NULL
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
   
   db = drizzle(sqlite, { schema });
 } else {
-  // Use D1 in production
-  if (!DB) {
-    throw new Error("DB is not defined - did you forget to add the D1 binding?");
-  }
-  db = drizzle(DB, { schema });
+  throw new Error("Production database not configured");
 }
 
 export { db }; 
