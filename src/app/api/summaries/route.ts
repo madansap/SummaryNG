@@ -1,4 +1,5 @@
-import { auth } from "@clerk/nextjs";
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { summaries } from "@/drizzle/schema";
@@ -6,17 +7,18 @@ import { nanoid } from "nanoid";
 
 export async function POST(req: Request) {
   try {
-    const { userId } = auth();
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!userId) {
+    if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     const { url, content, title } = await req.json();
 
-    const summary = await db.insert(summaries).values({
+    const summary = await db?.insert(summaries).values({
       id: nanoid(),
-      userId,
+      userId: session.user.id,
       url,
       content,
       title,
@@ -24,7 +26,7 @@ export async function POST(req: Request) {
       updatedAt: new Date(),
     }).returning();
 
-    return NextResponse.json(summary[0]);
+    return NextResponse.json(summary?.[0]);
   } catch (error) {
     console.error("[SUMMARIES_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });

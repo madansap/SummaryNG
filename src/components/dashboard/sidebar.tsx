@@ -12,7 +12,20 @@ import {
   Plus,
 } from "lucide-react";
 
-export function Sidebar() {
+interface Summary {
+  id: string;
+  title: string;
+  content: string;
+  url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface SidebarProps {
+  summaries: Summary[];
+}
+
+export function Sidebar({ summaries }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (

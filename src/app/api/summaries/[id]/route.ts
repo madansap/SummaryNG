@@ -17,13 +17,20 @@ export async function GET(
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const data = await db?.query.summaries.findFirst({
-      where: (summaries, { eq: equals }) => 
-        equals(summaries.id, params.id) && 
-        equals(summaries.userId, session.user.id),
-    });
+    const summary = await db?.select()
+      .from(summaries)
+      .where(eq(summaries.id, params.id))
+      .where(eq(summaries.userId, session.user.id))
+      .get();
 
-    return NextResponse.json(data);
+    if (!summary) {
+      return NextResponse.json(
+        { error: 'Summary not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(summary);
   } catch (error) {
     console.error('Error in GET /api/summaries/[id]:', error);
     return new NextResponse('Internal Error', { status: 500 });
@@ -62,8 +69,10 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { userId } = auth();
-    if (!userId) {
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -79,9 +88,10 @@ export async function PATCH(
     }
 
     // Verify the summary belongs to the user
-    const existingSummary = await db.select()
+    const existingSummary = await db?.select()
       .from(summaries)
       .where(eq(summaries.id, params.id))
+      .where(eq(summaries.userId, session.user.id))
       .get();
 
     if (!existingSummary) {
@@ -91,20 +101,14 @@ export async function PATCH(
       );
     }
 
-    if (existingSummary.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     // Update the summary
-    const updatedSummary = await db.update(summaries)
+    const updatedSummary = await db?.update(summaries)
       .set({
         content: body.content,
         updatedAt: new Date(),
       })
       .where(eq(summaries.id, params.id))
+      .where(eq(summaries.userId, session.user.id))
       .returning()
       .get();
 
