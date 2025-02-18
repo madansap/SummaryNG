@@ -1,25 +1,27 @@
-import { authMiddleware } from "@clerk/nextjs";
-import { NextResponse } from "next/server";
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// Export the middleware
-export default authMiddleware({
-  publicRoutes: ["/", "/sign-in", "/sign-up"],
-  afterAuth(auth, req) {
-    // If the user is signed in and trying to access auth pages
-    if (auth.userId && ["/sign-in", "/sign-up"].includes(req.nextUrl.pathname)) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
+export async function middleware(request: NextRequest) {
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req: request, res });
 
-    // If the user is not signed in and trying to access protected routes
-    if (!auth.userId && req.nextUrl.pathname.startsWith("/dashboard")) {
-      return NextResponse.redirect(new URL("/sign-in", req.url));
-    }
+  // Refresh session if expired - required for Server Components
+  await supabase.auth.getSession();
 
-    return NextResponse.next();
-  },
-});
+  return res;
+}
 
-// Export config
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     * - api routes that don't require authentication
+     */
+    '/((?!_next/static|_next/image|favicon.ico|public|api/public).*)',
+  ],
 };
