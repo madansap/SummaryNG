@@ -7,7 +7,8 @@ const nextConfig = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
-        tls: false
+        tls: false,
+        perf_hooks: false
       };
     }
     return config;
