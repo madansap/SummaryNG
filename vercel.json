@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "NODE_ENV=production pnpm install && pnpm run build",
-  "installCommand": "npm install -g pnpm && pnpm install",
+  "buildCommand": "NODE_ENV=production pnpm install --no-optional && pnpm run build",
+  "installCommand": "npm install -g pnpm && pnpm install --no-optional",
   "framework": "nextjs",
   "env": {
     "NODE_ENV": "production"

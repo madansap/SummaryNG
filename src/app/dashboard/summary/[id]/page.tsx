@@ -8,7 +8,9 @@ interface Summary {
   id: string;
   title: string;
   content: string;
+  url: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export default function SummaryPage() {
@@ -21,6 +23,9 @@ export default function SummaryPage() {
     const fetchSummary = async () => {
       try {
         const response = await fetch(`/api/summaries/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch summary');
+        }
         const data = await response.json();
         setSummary(data);
       } catch (error) {

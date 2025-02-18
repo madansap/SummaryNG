@@ -8,7 +8,8 @@ const nextConfig = {
         fs: false,
         net: false,
         tls: false,
-        perf_hooks: false
+        perf_hooks: false,
+        'better-sqlite3': false
       };
     }
     return config;

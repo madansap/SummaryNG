@@ -12,8 +12,9 @@ interface SummaryViewProps {
     id: string;
     content: string;
     title: string;
-    createdAt: string;
     url: string;
+    createdAt: string;
+    updatedAt: string;
   };
 }
 
