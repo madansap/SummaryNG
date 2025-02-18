@@ -1,9 +1,7 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { summaries } from '@/drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { sql } from '@vercel/postgres';
 
 export async function GET(
   req: Request,
@@ -17,11 +15,14 @@ export async function GET(
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const summary = await db?.select()
-      .from(summaries)
-      .where(eq(summaries.id, params.id))
-      .where(eq(summaries.userId, session.user.id))
-      .get();
+    const { rows } = await sql`
+      SELECT * FROM summaries 
+      WHERE id = ${params.id} 
+      AND user_id = ${session.user.id}
+      LIMIT 1
+    `;
+
+    const summary = rows[0];
 
     if (!summary) {
       return NextResponse.json(
@@ -49,9 +50,11 @@ export async function DELETE(
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    await db?.delete(summaries)
-      .where(eq(summaries.id, params.id))
-      .where(eq(summaries.userId, session.user.id));
+    await sql`
+      DELETE FROM summaries 
+      WHERE id = ${params.id} 
+      AND user_id = ${session.user.id}
+    `;
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
@@ -88,11 +91,14 @@ export async function PATCH(
     }
 
     // Verify the summary belongs to the user
-    const existingSummary = await db?.select()
-      .from(summaries)
-      .where(eq(summaries.id, params.id))
-      .where(eq(summaries.userId, session.user.id))
-      .get();
+    const { rows: existingRows } = await sql`
+      SELECT * FROM summaries 
+      WHERE id = ${params.id} 
+      AND user_id = ${session.user.id}
+      LIMIT 1
+    `;
+
+    const existingSummary = existingRows[0];
 
     if (!existingSummary) {
       return NextResponse.json(
@@ -102,15 +108,16 @@ export async function PATCH(
     }
 
     // Update the summary
-    const updatedSummary = await db?.update(summaries)
-      .set({
-        content: body.content,
-        updatedAt: new Date(),
-      })
-      .where(eq(summaries.id, params.id))
-      .where(eq(summaries.userId, session.user.id))
-      .returning()
-      .get();
+    const { rows: updatedRows } = await sql`
+      UPDATE summaries 
+      SET content = ${body.content}, 
+          updated_at = NOW()
+      WHERE id = ${params.id} 
+      AND user_id = ${session.user.id}
+      RETURNING *
+    `;
+
+    const updatedSummary = updatedRows[0];
 
     return NextResponse.json(updatedSummary);
   } catch (error: unknown) {
