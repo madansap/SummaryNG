@@ -1,5 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js"
+import { drizzle as drizzleVercel } from "drizzle-orm/vercel-postgres"
 import postgres from "postgres"
+import { sql } from "@vercel/postgres"
 import * as schema from "@/drizzle/schema"
 
 // Define D1Database type for Cloudflare
@@ -21,16 +23,19 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL environment variable is required");
 }
 
-// Don't initialize postgres in edge runtime
-const client = process.env.EDGE_RUNTIME
-  ? null
-  : postgres(process.env.DATABASE_URL, {
+// For local development and non-edge environments
+const queryClient = process.env.NODE_ENV === 'development' 
+  ? postgres(process.env.DATABASE_URL!, {
       max: 1,
-      ssl: process.env.NODE_ENV === "production",
+      ssl: true,
       idle_timeout: 20,
       connect_timeout: 10,
-    });
+    })
+  : null;
 
-const db = client ? drizzle(client, { schema }) : null;
+// For Vercel deployment and edge environments
+const db = process.env.NODE_ENV === 'development' && queryClient
+  ? drizzle(queryClient, { schema })
+  : drizzleVercel(sql, { schema });
 
 export { db }; 
