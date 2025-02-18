@@ -1,11 +1,5 @@
-import { drizzle } from "drizzle-orm/d1"
-import * as schema from "./schema"
+import { drizzle } from 'drizzle-orm/d1';
+import { sql } from '@vercel/postgres';
+import * as schema from '@/drizzle/schema';
 
-let db: ReturnType<typeof drizzle<typeof schema>> | null = null
-
-export function getDB(d1: D1Database) {
-  if (!db) {
-    db = drizzle(d1, { schema })
-  }
-  return db
-} 
+export const db = drizzle(sql, { schema }); 

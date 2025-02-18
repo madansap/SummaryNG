@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, ChangeEvent, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -148,22 +148,15 @@ export function SummaryForm() {
   }
 
   const handleContentChange = () => {
-    // Save the current selection
     const selection = document.getSelection();
     const range = selection?.getRangeAt(0);
     
-    // Save current state to undo stack
     const summaryContent = containerRef.current?.querySelector('.summary-content') as HTMLElement;
     if (summaryContent) {
-      // Save to undo stack
-      setUndoStack(prev => [...prev, summaryContent.innerHTML]);
-      // Clear redo stack on new changes
+      setUndoStack((prev: string[]) => [...prev, summaryContent.innerHTML]);
       setRedoStack([]);
-      
-      // Mark as edited
       setIsEdited(true);
       
-      // Restore selection if it was within the content
       if (range && summaryContent.contains(range.commonAncestorContainer)) {
         selection?.removeAllRanges();
         selection?.addRange(range);
@@ -179,7 +172,7 @@ export function SummaryForm() {
 
     const updatedContent = summaryContent.innerHTML;
     
-    setSummary(prev => prev ? { ...prev, content: updatedContent } : null);
+    setSummary((prev: Summary | null) => prev ? { ...prev, content: updatedContent } : null);
     setIsEdited(false);
     toast.success("Changes saved successfully");
   };
@@ -450,6 +443,14 @@ export function SummaryForm() {
     }
   };
 
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setUrl(e.target.value);
+  };
+
+  const handleAiPromptChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setAiPrompt(e.target.value);
+  };
+
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="flex gap-3">
@@ -457,7 +458,7 @@ export function SummaryForm() {
           type="url"
           placeholder="Enter article url"
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={handleInputChange}
           className="flex-1 h-12 px-4 text-base bg-white border rounded-lg"
         />
         <Button 
@@ -622,7 +623,7 @@ export function SummaryForm() {
               type="text"
               placeholder="Ask AI to make changes (e.g., 'Make it shorter')"
               value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
+              onChange={handleAiPromptChange}
               className="flex-1 h-12 px-4 text-base bg-white border rounded-lg"
             />
             <Button

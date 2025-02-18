@@ -1,21 +1,12 @@
-type Config = {
-  schema: string;
-  out: string;
-  driver: 'pg';
-  dbCredentials: {
-    connectionString: string;
-  };
-  verbose?: boolean;
-  strict?: boolean;
-};
+import type { Config } from 'drizzle-kit';
 
 export default {
   schema: "./src/drizzle/schema.ts",
   out: "./drizzle",
   driver: 'pg',
   dbCredentials: {
-    connectionString: process.env.POSTGRES_URL!,
+    connectionString: process.env.POSTGRES_URL || '',
   },
   verbose: true,
   strict: true,
-} satisfies Config 
+} satisfies Config; 
