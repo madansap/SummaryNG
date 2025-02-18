@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap, Brain, Download, Clock, Shield, Users } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useEffect, useState } from 'react';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
@@ -25,6 +26,16 @@ function FeatureCard({ icon, title, description }: FeatureCardProps) {
 export default function LandingPage() {
   const router = useRouter();
   const supabase = createClientComponentClient();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user);
+    };
+
+    getUser();
+  }, [supabase]);
 
   const handleSignIn = () => {
     router.push('/sign-in');
@@ -50,8 +61,16 @@ export default function LandingPage() {
             <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
               Pricing
             </Link>
-            <Button variant="ghost" onClick={handleSignIn}>Sign In</Button>
-            <Button onClick={handleSignUp}>Get Started</Button>
+            {user ? (
+              <Button variant="ghost" onClick={() => router.push('/dashboard')}>
+                Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={handleSignIn}>Sign In</Button>
+                <Button onClick={handleSignUp}>Get Started</Button>
+              </>
+            )}
           </nav>
         </div>
       </header>
