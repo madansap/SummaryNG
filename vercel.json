@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "rm -rf node_modules && rm -f pnpm-lock.yaml && pnpm install && next build",
-  "installCommand": "npm install -g pnpm && pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm install --prod && next build",
+  "installCommand": "npm install -g pnpm",
   "framework": "nextjs"
 } 
