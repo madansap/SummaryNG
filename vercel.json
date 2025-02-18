@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "NODE_ENV=production pnpm install --prod && pnpm run build",
+  "buildCommand": "NODE_ENV=production pnpm install --prod --no-frozen-lockfile && pnpm run build",
   "installCommand": "npm install -g pnpm",
   "framework": "nextjs",
   "env": {

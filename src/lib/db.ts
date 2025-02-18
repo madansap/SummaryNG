@@ -35,28 +35,15 @@ if (process.env.NODE_ENV === 'production') {
       const { drizzle } = await import('drizzle-orm/better-sqlite3');
       
       const sqlite = new Database("local.db");
-      
-      // Create tables if they don't exist
-      sqlite.exec(`
-        CREATE TABLE IF NOT EXISTS summaries (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          title TEXT NOT NULL,
-          content TEXT NOT NULL,
-          url TEXT NOT NULL,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-      
       db = drizzle(sqlite, { schema });
     } catch (error) {
       console.error('Failed to initialize development database:', error);
+      throw error; // Re-throw to ensure we don't continue with an uninitialized database
     }
   };
 
   // Initialize development database
-  initDevDB();
+  initDevDB().catch(console.error);
 }
 
 export { db }; 
