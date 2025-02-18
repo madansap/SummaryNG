@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "NODE_ENV=production pnpm install --prod --frozen-lockfile=false --ignore-scripts && pnpm run build",
-  "installCommand": "npm install -g pnpm && pnpm install --prod --frozen-lockfile=false --ignore-scripts",
+  "buildCommand": "NODE_ENV=production pnpm install && pnpm run build",
+  "installCommand": "npm install -g pnpm && pnpm install",
   "framework": "nextjs",
   "env": {
-    "NODE_ENV": "production",
-    "SKIP_INSTALL_DEPS": "better-sqlite3"
+    "NODE_ENV": "production"
   }
 } 

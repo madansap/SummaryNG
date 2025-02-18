@@ -1,4 +1,13 @@
-import type { Config } from "drizzle-kit"
+type Config = {
+  schema: string;
+  out: string;
+  driver: 'pg';
+  dbCredentials: {
+    connectionString: string;
+  };
+  verbose?: boolean;
+  strict?: boolean;
+};
 
 export default {
   schema: "./src/drizzle/schema.ts",

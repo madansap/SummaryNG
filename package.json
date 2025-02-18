@@ -31,6 +31,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
+    "drizzle-kit": "^0.20.14",
     "drizzle-orm": "^0.28.0",
     "groq-sdk": "^0.15.0",
     "html-to-image": "^1.11.11",
@@ -46,7 +47,6 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.20.14",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.1.0",
     "postcss": "^8.4.35",
